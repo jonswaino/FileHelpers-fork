@@ -77,6 +77,7 @@ namespace FileHelpers.DataLink
 		//private RecordInfo mRecordInfo;
 
 		private string mTemplateFile = string.Empty;
+		private ExcelReadStopBehavior mExcelReadStopBehavior = ExcelReadStopBehavior.StopOnEmptyFirstCell;
 
 		#endregion
 
@@ -134,6 +135,15 @@ namespace FileHelpers.DataLink
 		{
 			get { return mTemplateFile; }
 			set { mTemplateFile = value; }
+		}
+
+		/// <summary>
+		/// Indicates the behavior to use when determining when to stop reading records from the source xls file.
+		/// </summary>
+		public ExcelReadStopBehavior ExcelReadStopBehavior
+		{
+			get { return mExcelReadStopBehavior; }
+			set { mExcelReadStopBehavior = value; }
 		}
 
 		#endregion
@@ -272,6 +282,12 @@ namespace FileHelpers.DataLink
 		}
 
 		#endregion
+
+		private bool CellIsEmpty(object row, object col)
+		{
+			var cellAsString = CellAsString(row, col);
+			return cellAsString == String.Empty;
+		}
 
 		#region "  CellAsString  "
 
@@ -416,6 +432,33 @@ namespace FileHelpers.DataLink
 
 		#region "  ExtractRecords  "
 
+		private bool ShouldStopOnRow(int cRow)
+		{
+			switch (this.ExcelReadStopBehavior)
+			{
+				case ExcelReadStopBehavior.StopOnEmptyFirstCell:
+					return CellIsEmpty(cRow, mStartColumn);
+
+				case ExcelReadStopBehavior.StopOnEmptyRow:
+					return RowIsEmpty(cRow);
+
+				default:
+					throw new ArgumentOutOfRangeException("Need to support new ExcelReadStopBehavior: " + this.ExcelReadStopBehavior);
+			}
+		}
+
+		private bool RowIsEmpty(int cRow)
+		{
+			for (int column = mStartColumn; column < mStartColumn + RecordFieldCount; column++)
+			{
+				if (CellIsEmpty(cRow, column) == false)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		/// <summary>Returns the records extracted from Excel file.</summary>
 		/// <returns>The extracted records.</returns>
 		public override object[] ExtractRecords()
@@ -440,7 +483,7 @@ namespace FileHelpers.DataLink
                     this.InitExcel();
                     this.OpenWorkbook(this.mFileName);
 
-                    while (CellAsString(cRow, mStartColumn) != String.Empty)
+                    while (ShouldStopOnRow(cRow) == false)
                     {
                         try
                         {
@@ -518,5 +561,16 @@ namespace FileHelpers.DataLink
         NeverUpdate = 2,
         /// <summary>Always update links for this workbook on opening</summary>
         AlwaysUpdate = 3
+	}
+
+	/// <summary>
+	/// Specifies how to determine when to stop reading rows from Excel
+	/// </summary>
+	public enum ExcelReadStopBehavior
+	{
+		/// <summary>First cell of the row being empty means we should stop reading</summary>
+		StopOnEmptyFirstCell = 1,
+		/// <summary>All cells in the row being empty means we should stop reading</summary>
+		StopOnEmptyRow = 2,
 	}
 }
