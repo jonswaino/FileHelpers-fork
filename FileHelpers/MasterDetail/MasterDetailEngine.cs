@@ -393,7 +393,7 @@ namespace FileHelpers.MasterDetail
                                 err.mLineNumber = mLineNumber;
                                 err.mExceptionInfo = ex;
                                 //							err.mColumnNumber = mColumnNum;
-                                err.mRecordString = completeLine;
+                                err.mRecordString = currentLine;
 
                                 mErrorManager.AddError(err);
                                 break;

@@ -327,7 +327,7 @@ namespace FileHelpers
                                                     {
                                                         mLineNumber = freader.LineNumber,
                                                         mExceptionInfo = ex,
-                                                        mRecordString = completeLine,
+                                                        mRecordString = currentLine,
                             //							mColumnNumber = mColumnNum
                                                     };
 

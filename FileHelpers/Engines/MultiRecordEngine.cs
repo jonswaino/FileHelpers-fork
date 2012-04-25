@@ -332,7 +332,7 @@ namespace FileHelpers
                                 err.mLineNumber = freader.LineNumber;
                                 err.mExceptionInfo = ex;
                                 //							err.mColumnNumber = mColumnNum;
-                                err.mRecordString = completeLine;
+                                err.mRecordString = currentLine;
 
                                 mErrorManager.AddError(err);
                                 break;
